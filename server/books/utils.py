@@ -18,7 +18,7 @@ def upload_once(func):
     as only one upload is permitted
     """
     already_uploaded = 'This fixture is already uploaded'
-    allowed_files = ('books.csv', 'reviews.csv')
+    allowed_files = ('books', 'reviews')
 
     @wraps(func)
     def wrapper(*args, **kwargs):
