@@ -1,4 +1,15 @@
+"""
+Django models module
+"""
+import operator
+from functools import reduce
+
 from django.db import models
+from django.db.models import (
+    Q,
+    Avg,
+    Count
+)
 
 
 class Author(models.Model):
@@ -9,8 +20,56 @@ class Author(models.Model):
     """
     name = models.CharField(max_length=100)
 
-    def __str__(self):
+    def __str__(self):  # pylint: disable=invalid-str-returned
         return self.name
+
+
+class BookManager(models.Manager):
+    """
+    `BookManager` class contains methods for filtering books
+    """
+
+    # I know that theory says 3 parameters are max number, but for consistency
+    # sake I decided to leave it as it is (for now)
+    def filter_qs_by(self, q=None, isbn=None, genre=None, author=None):
+        """Filters by single value or iterable"""
+        qs = self.get_queryset()
+        if q:
+            qs = qs.filter(title__icontains=q)
+        if isbn:
+            qs = qs.filter(isbn=isbn)
+        if author:
+            qs = qs.filter(author__name__icontains=author)
+
+        if genre:
+            clauses = (Q(genre__icontains=gnr) for gnr in genre.split(','))
+            query = reduce(operator.or_, clauses)
+            qs = qs.filter(query)
+        return qs
+
+    def average_reviews(self, qs=None, rate_gte=None, rate_lte=None):
+        """
+        Aggregates books' review average rate and
+        filters greater or/and lower than given values
+        """
+        qs = qs or self.get_queryset()
+        if rate_gte:
+            qs = qs.annotate(avg=Avg('reviews__rate')).filter(avg__gte=rate_gte)
+        if rate_lte:
+            qs = qs.annotate(avg=Avg('reviews__rate')).filter(avg__lte=rate_lte)
+        return qs
+
+    def count_reviews(self, qs=None, count_gte=None, count_lte=None):
+        """
+        Aggregates books' review count and
+        filters greater or/and lower than given values
+        """
+        qs = qs or self.get_queryset()
+        if count_gte:
+            qs = qs.annotate(cnt=Count('reviews')).filter(cnt__gte=count_gte)
+        if count_lte:
+            qs = qs.annotate(cnt=Count('reviews')).filter(cnt__lte=count_lte)
+        return qs
 
 
 class Book(models.Model):
@@ -38,6 +97,11 @@ class Book(models.Model):
     author = models.ForeignKey('Author', on_delete=models.CASCADE)
     genre = models.CharField(max_length=50, choices=GENRE_CHOICES)
 
+    objects = BookManager()
+
+    class Meta:  # pylint: disable=too-few-public-methods
+        ordering = ('title', )
+
     def __str__(self):
         return f'{self.title} ({self.isbn}) of {self.author.name}'
 
@@ -54,7 +118,11 @@ class Review(models.Model):
     """
     rate = models.PositiveSmallIntegerField()
     description = models.TextField()
-    book = models.ForeignKey('Book', on_delete=models.CASCADE)
+    book = models.ForeignKey(
+        'Book',
+        related_name='reviews',
+        on_delete=models.CASCADE
+    )
 
     @staticmethod
     def get_book_title(book_id):
