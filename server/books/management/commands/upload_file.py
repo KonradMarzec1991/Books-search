@@ -29,7 +29,8 @@ class Command(BaseCommand):
         if file_name is None:
             raise ValueError('File_name cannot be None')
 
-        path = f'{os.getcwd()}/fixtures/{file_name}.csv'
+        #  if you want to use runserver command, please remove /server part
+        path = f'{os.getcwd()}/server/fixtures/{file_name}.csv'
         try:
             console_response = FixtureCreator(path).upload()
 
