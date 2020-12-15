@@ -22,22 +22,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         """
-        Given file name, gets file from /fixtures folder and using
-        `FixtureCreator` uploads to database csv records
+        Gets file name, gets file from /fixtures folder and using
+        `FixtureCreator` uploads to database csv fixtures
         """
         file_name = kwargs.get('file_name', None)
         if file_name is None:
             raise ValueError('File_name cannot be None')
 
         path = f'{os.getcwd()}/fixtures/{file_name}.csv'
-
         try:
-            FixtureCreator(path).upload()
+            console_response = FixtureCreator(path).upload()
 
-            self.stdout.write(self.style.SUCCESS(
-                f'Users successfully uploaded to db'
-            ))
+            self.stdout.write(self.style.SUCCESS(console_response))
         except IOError:
             self.stdout.write(self.style.WARNING(
-                f'Unable to read file (path) or file contains wrong data'
+                f'Unable to read file {path} or file contains wrong data'
             ))

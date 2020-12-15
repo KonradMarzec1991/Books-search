@@ -21,7 +21,7 @@ class FixtureCreator:
     def csv_generator(self, delimiter=','):
         """
         Creates generator with csv data, omits headers
-        :param delimiter: a sign, data in csv if is partitioned off
+        :param delimiter: a sign, data in csv is partitioned off
         :return: generator
         """
         with open(self.path) as csv_file:
