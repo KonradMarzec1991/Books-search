@@ -47,24 +47,24 @@ class BookManager(models.Manager):
             qs = qs.filter(query)
         return qs
 
-    def average_reviews(self, qs=None, rate_gte=None, rate_lte=None):
+    @staticmethod
+    def average_reviews(qs, rate_gte=None, rate_lte=None):
         """
         Aggregates books' review average rate and
         filters greater or/and lower than given values
         """
-        qs = qs or self.get_queryset()
         if rate_gte:
             qs = qs.annotate(avg=Avg('reviews__rate')).filter(avg__gte=rate_gte)
         if rate_lte:
             qs = qs.annotate(avg=Avg('reviews__rate')).filter(avg__lte=rate_lte)
         return qs
 
-    def count_reviews(self, qs=None, count_gte=None, count_lte=None):
+    @staticmethod
+    def count_reviews(qs, count_gte=None, count_lte=None):
         """
         Aggregates books' review count and
         filters greater or/and lower than given values
         """
-        qs = qs or self.get_queryset()
         if count_gte:
             qs = qs.annotate(cnt=Count('reviews')).filter(cnt__gte=count_gte)
         if count_lte:

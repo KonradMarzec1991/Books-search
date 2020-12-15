@@ -6,6 +6,7 @@ from rest_framework import generics
 from .models import Book
 from .serializers import BookSerializer
 from .pagination import BookPagination
+from .utils import check_num
 
 
 class BookList(generics.ListAPIView):
@@ -27,16 +28,14 @@ class BookList(generics.ListAPIView):
 
         rate_gte = params.get('rate_gte', None)
         rate_lte = params.get('rate_lte', None)
-        rate_gte = float(rate_gte) if rate_gte else None
-        rate_lte = float(rate_lte) if rate_lte else None
-
+        rate_gte = check_num(rate_gte, float)
+        rate_lte = check_num(rate_lte, float)
         qs = Book.objects.average_reviews(qs, rate_gte, rate_lte)
 
         count_gte = params.get('count_gte', None)
         count_lte = params.get('count_lte', None)
-        count_gte = int(count_gte) if count_gte else None
-        count_lte = int(count_lte) if count_lte else None
-
+        count_gte = check_num(count_gte, int)
+        count_lte = check_num(count_lte, int)
         qs = Book.objects.count_reviews(qs, count_gte, count_lte)
         return qs
 

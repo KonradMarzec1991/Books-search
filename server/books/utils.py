@@ -107,3 +107,12 @@ class FixtureCreator:
                 book_id=Book.objects.filter(isbn=isbn).first().id
             )
         return self.console_response()
+
+
+def check_num(value, cast=float):
+    """Checks if param can be cast to type"""
+    if value:
+        try:
+            return cast(value)
+        except ValueError:
+            return None
